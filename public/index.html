@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>スクリプトログイン</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #1e1e1e;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .container {
+      background: #2c2c2c;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      text-align: center;
+      width: 300px;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 5px;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #45a049;
+    }
+    .result {
+      margin-top: 15px;
+      color: #ccc;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>GameGuardian スクリプト ローダー</h2>
+    <input type="text" id="uuid" placeholder="UUIDを入力">
+    <button onclick="login()">ログインしてスクリプト取得</button>
+    <div class="result" id="result"></div>
+  </div>
+
+  <script>
+    const scriptURL = "https://raw.githubusercontent.com/otuhaziscriptoooooo/gamegurdian-script-haziotu/refs/heads/main/script.lua?token=GHSAT0AAAAAADFTTXTUSFEFPRB7JFZ4MCZG2CWNJPA";
+
+    function login() {
+      const uuid = document.getElementById("uuid").value.trim();
+      const resultDiv = document.getElementById("result");
+
+      if (!uuid) {
+        resultDiv.textContent = "UUIDを入力してください。";
+        return;
+      }
+
+      fetch(scriptURL)
+        .then(response => {
+          if (!response.ok) throw new Error("読み込み失敗");
+          return response.text();
+        })
+        .then(script => {
+          const blob = new Blob([script], { type: 'text/plain' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = "script.lua";
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          resultDiv.textContent = "ダウンロードしました。";
+        })
+        .catch(err => {
+          resultDiv.textContent = "スクリプトの取得に失敗しました。";
+        });
+    }
+  </script>
+</body>
+</html>

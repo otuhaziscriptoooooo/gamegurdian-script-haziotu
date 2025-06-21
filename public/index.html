@@ -2,90 +2,48 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>スクリプトログイン</title>
+  <title>スクリプト認証</title>
   <style>
-    body {
-      font-family: sans-serif;
-      background: #1e1e1e;
-      color: #fff;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-    .container {
-      background: #2c2c2c;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.5);
-      text-align: center;
-      width: 300px;
-    }
-    input {
-      width: 100%;
-      padding: 10px;
-      margin: 10px 0;
-      border: none;
-      border-radius: 5px;
-    }
-    button {
-      width: 100%;
-      padding: 10px;
-      background: #4CAF50;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #45a049;
-    }
-    .result {
-      margin-top: 15px;
-      color: #ccc;
-    }
+    body { font-family: sans-serif; background: #111; color: #eee; display: flex; justify-content: center; align-items: center; height: 100vh; }
+    .box { background: #222; padding: 30px; border-radius: 10px; width: 300px; text-align: center; }
+    input, button { width: 100%; margin: 10px 0; padding: 10px; border-radius: 5px; border: none; }
+    button { background: #4caf50; color: white; cursor: pointer; }
+    pre { background: #333; padding: 10px; word-break: break-all; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h2>GameGuardian スクリプト ローダー</h2>
-    <input type="text" id="uuid" placeholder="UUIDを入力">
-    <button onclick="login()">ログインしてスクリプト取得</button>
-    <div class="result" id="result"></div>
+  <div class="box">
+    <h2>スクリプト認証</h2>
+    <input id="name" placeholder="ユーザーネーム" />
+    <button onclick="generateToken()">トークン生成</button>
+    <div id="output"></div>
   </div>
-
   <script>
-    const scriptURL = "https://raw.githubusercontent.com/otuhaziscriptoooooo/gamegurdian-script-haziotu/refs/heads/main/script.lua?token=GHSAT0AAAAAADFTTXTUSFEFPRB7JFZ4MCZG2CWNJPA";
+    function uuidv4() {
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    }
 
-    function login() {
-      const uuid = document.getElementById("uuid").value.trim();
-      const resultDiv = document.getElementById("result");
+    async function generateToken() {
+      const name = document.getElementById("name").value.trim();
+      if (!name) return alert("名前を入力してください。");
 
-      if (!uuid) {
-        resultDiv.textContent = "UUIDを入力してください。";
-        return;
-      }
+      const ipData = await fetch("https://api.ipify.org?format=json").then(r => r.json());
+      const ip = ipData.ip;
 
-      fetch(scriptURL)
-        .then(response => {
-          if (!response.ok) throw new Error("読み込み失敗");
-          return response.text();
-        })
-        .then(script => {
-          const blob = new Blob([script], { type: 'text/plain' });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = "script.lua";
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          resultDiv.textContent = "ダウンロードしました。";
-        })
-        .catch(err => {
-          resultDiv.textContent = "スクリプトの取得に失敗しました。";
-        });
+      const rawToken = name + ":" + ip;
+      const token = btoa(rawToken);
+
+      const output = document.getElementById("output");
+      output.innerHTML = `<p>トークンをコピーして保存してください。</p>
+        <pre>${token}</pre>
+        <a href="loader.lua" download><button>スクリプトダウンロード</button></a>`;
+
+      // 保存用ファイルをGitHub連携用に出力 (GitHub Pagesは書き込みできないので参考として表示)
+      console.log(`保存先: tokens/${name}.txt`);
+      console.log(`内容: ${token}`);
     }
   </script>
 </body>
